@@ -6,7 +6,11 @@ class Velocity {
   public:
     inline Velocity() = default;
 
-    // TODO: комментарии
+    /**
+     * @brief Конструктор скорости объекта.
+     * @param abs модуль скорости
+     * @param angle угол от горизонтальной оси против часовой стрелки.
+     */
     inline Velocity(double abs, double angle) {
         const double x = std::cos(angle);
         const double y = std::sin(angle);

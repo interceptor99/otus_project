@@ -4,7 +4,16 @@
 #include "Velocity.hpp"
 
 class Ball {
-public:
+
+    Color _color;
+    Velocity _velocity;
+    Point _center;
+    double _radius;
+
+  public:
+
+    Ball(double x, double y, double radius, const Color& color);
+
     void setVelocity(const Velocity& velocity);
     Velocity getVelocity() const;
     void draw(Painter& painter) const;
