@@ -9,10 +9,11 @@ class Ball {
     Velocity _velocity;
     Point _center;
     double _radius;
+    bool _isCollidable;
 
   public:
 
-    Ball(double x, double y, double radius, const Color& color);
+    Ball(double x, double y, double radius, const Color& color, bool isCollidable);
 
     void setVelocity(const Velocity& velocity);
     Velocity getVelocity() const;
@@ -21,4 +22,5 @@ class Ball {
     Point getCenter() const;
     double getRadius() const;
     double getMass() const;
+    bool getIsCollidable() const;
 };

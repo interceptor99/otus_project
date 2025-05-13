@@ -5,9 +5,9 @@
 /**
  * Конструктор
  */
-Ball::Ball(double x, double y, double radius, const Color& color) 
-: _radius(radius) 
-{
+Ball::Ball(double x, double y, double radius, const Color& color, bool isCollidable)
+    : _radius(radius) 
+    , _isCollidable(isCollidable) {
     _center.x = x;
     _center.y = y;
     _color = Color(color.red(), color.green(), color.blue());
@@ -74,4 +74,11 @@ double Ball::getRadius() const {
  */
 double Ball::getMass() const {
     return M_PI * _radius * _radius * _radius * 4. / 3.;
+}
+
+/**
+ * @brief Возвращает флаг коллизии объекта.
+ */
+bool Ball::getIsCollidable() const {
+    return _isCollidable;
 }
