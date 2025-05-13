@@ -7,6 +7,25 @@
 // Изменять не следует
 static constexpr double timePerTick = 0.001;
 
+static std::istream & operator>>( std::istream & stream, Point& point) 
+{
+    double x{0.}, y{0.};
+    stream >> x >> y;
+    point.x = x;
+    point.y = y;
+    return stream;
+}
+
+static std::istream& operator>>(std::istream& stream, Color& color) 
+{
+    double red{1.}, green{0.}, blue{0.};
+    stream >> red >> green >> blue;
+    color.setRed(red);
+    color.setGreen(green);
+    color.setBlue(blue);
+    return stream;
+}
+
 /**
  * Конструирует объект мира для симуляции
  * @param worldFilePath путь к файлу модели мира
@@ -32,26 +51,18 @@ World::World(const std::string& worldFilePath) {
      * как и (red, green, blue). Опять же, можно упростить
      * этот код, научившись читать сразу Point, Color...
      */
-    double x;
-    double y;
-    double vx;
-    double vy;
     double radius;
 
-    double red;
-    double green;
-    double blue;
-
     bool isCollidable;
+
+    Point center, velocity;
+    Color color;
 
     // Здесь не хватает обработки ошибок, но на текущем
     // уровне прохождения курса нас это устраивает
     while (stream.peek(), stream.good()) {
-        // Читаем координаты центра шара (x, y) и вектор
-        // его скорости (vx, vy)
-        stream >> x >> y >> vx >> vy;
-        // Читаем три составляющие цвета шара
-        stream >> red >> green >> blue;
+        stream >> center >> velocity;
+        stream >> color;
         // Читаем радиус шара
         stream >> radius;
         // Читаем свойство шара isCollidable, которое
@@ -60,8 +71,8 @@ World::World(const std::string& worldFilePath) {
         // В базовой части задания этот параметр
         stream >> std::boolalpha >> isCollidable;
 
-        Ball ball(x, y, radius, Color(red, green, blue));
-        ball.setVelocity(Point(vx, vy));
+        Ball ball(center.x, center.y, radius, color);
+        ball.setVelocity(velocity);
 
         balls.push_back(ball);
     }
