@@ -1,14 +1,30 @@
-#include <algorithm>
 #include <iostream>
-#include <limits>
-#include <vector>
+#include <thread>
 
 #include "CRC32.hpp"
 #include "IO.hpp"
 
 /// @brief Переписывает последние 4 байта значением value
-void replaceLastFourBytes(std::vector<char> &data, uint32_t value) {
+static void replaceLastFourBytes(std::vector<char> &data, uint32_t value) {
   std::copy_n(reinterpret_cast<const char *>(&value), 4, data.end() - 4);
+}
+
+static void hackPart( std::vector<char> result, uint32_t originalCrc32, size_t start, size_t end, size_t & iSuccess )
+{
+  if (iSuccess > 0) return;
+
+  for (size_t i = start; i < end; ++i) {
+    // Заменяем последние четыре байта на значение i
+    replaceLastFourBytes(result, uint32_t(i));
+    // Вычисляем CRC32 текущего вектора result
+    auto currentCrc32 = crc32(result.data(), result.size());
+
+    if (currentCrc32 == originalCrc32) {
+      std::cout << "Success\n";
+      iSuccess = i;
+      break;
+    }
+  }
 }
 
 /**
@@ -22,7 +38,7 @@ void replaceLastFourBytes(std::vector<char> &data, uint32_t value) {
  * оригинального вектора
  * @return новый вектор
  */
-std::vector<char> hack(const std::vector<char> &original,
+static std::vector<char> hack(const std::vector<char> &original,
                        const std::string &injection) {
   const uint32_t originalCrc32 = crc32(original.data(), original.size());
 
@@ -30,29 +46,25 @@ std::vector<char> hack(const std::vector<char> &original,
   auto it = std::copy(original.begin(), original.end(), result.begin());
   std::copy(injection.begin(), injection.end(), it);
 
-  /*
-   * Внимание: код ниже крайне не оптимален.
-   * В качестве доп. задания устраните избыточные вычисления
-   */
-  const size_t maxVal = std::numeric_limits<uint32_t>::max();
-  for (size_t i = 0; i < maxVal; ++i) {
-    // Заменяем последние четыре байта на значение i
-    replaceLastFourBytes(result, uint32_t(i));
-    // Вычисляем CRC32 текущего вектора result
-    auto currentCrc32 = crc32(result.data(), result.size());
+  constexpr size_t maxVal = std::numeric_limits<uint32_t>::max();
+  std::vector<std::thread> threads;
+  const size_t nThreads = 6;
+  const size_t nPart = maxVal / nThreads;
+  size_t iSuccess = 0;
 
-    if (currentCrc32 == originalCrc32) {
-      std::cout << "Success\n";
-      return result;
-    }
-    // Отображаем прогресс
-    if (i % 1000 == 0) {
-      std::cout << "progress: "
-                << static_cast<double>(i) / static_cast<double>(maxVal)
-                << std::endl;
-    }
+  for (size_t i = 0; i < maxVal; i += nPart) 
+  {
+    threads.emplace_back(std::thread(hackPart, result, originalCrc32,
+                                     i, std::min(maxVal, i + nPart), std::ref( iSuccess )));
   }
-  throw std::logic_error("Can't hack");
+
+  for ( auto & thread : threads )
+  {
+    if (thread.joinable() ) thread.join();
+  }
+
+  replaceLastFourBytes(result, uint32_t(iSuccess));
+  return result;
 }
 
 int main(int argc, char **argv) {
@@ -64,7 +76,13 @@ int main(int argc, char **argv) {
 
   try {
     const std::vector<char> data = readFromFile(argv[1]);
+
+    std::chrono::time_point start = std::chrono::high_resolution_clock::now();
     const std::vector<char> badData = hack(data, "He-he-he");
+    std::chrono::time_point end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << elapsed.count() << std::endl;
+
     writeToFile(argv[2], badData);
   } catch (std::exception &ex) {
     std::cerr << ex.what() << '\n';
