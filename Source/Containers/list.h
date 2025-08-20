@@ -1,3 +1,7 @@
+#pragma once
+
+#include <cstddef>
+
 template <typename T>
 struct Node
 {
@@ -18,6 +22,48 @@ class MyList
 public:
 
   MyList() : first( nullptr ), last( nullptr ), count( 0 ) {}
+
+  MyList( const MyList & right ) : first( nullptr ), last( nullptr ), count( 0 )
+  {
+    Node<T> * current = right.first;
+    while ( current != nullptr ) 
+    {
+      push_back( current->data );
+      current = current->next;
+    }
+  }
+
+  MyList( MyList && right ) : first( right.first ), last( right.last ), size( right.count )
+  {
+    right.first = nullptr;
+    right.last = nullptr;
+    right.count = 0;
+  }
+
+  MyList & operator=( const MyList & right )
+  {
+    if ( this != &right ) 
+    {
+      Node<T> * curr = first;
+      while ( curr != nullptr )
+      {
+        Node<T> * next = curr->next;
+        delete curr;
+        curr = next;
+      }
+      first = nullptr;
+      last = nullptr;
+      count = 0;
+
+      Node<T> * current = right.first;
+      while ( current != nullptr ) 
+      {
+        push_back( current->data );
+        current = current->next;
+      }
+    }
+    return *this;
+  }
 
   ~MyList()
   {

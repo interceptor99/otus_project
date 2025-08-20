@@ -1,3 +1,7 @@
+#pragma once
+
+#include <cstddef>
+
 template <typename T>
 class MyVector
 {
@@ -8,6 +12,33 @@ class MyVector
 public:
 
   MyVector() : arr( nullptr ), size( 0 ), capacity( 0 ) {}
+
+  MyVector( const MyVector & right ) : size( right.size ), capacity( right.capacity )
+  {
+    arr = new T[capacity];
+    std::copy( right.arr, right.arr + size, arr );
+  }
+
+  MyVector( MyVector && right ) : arr( right.arr ), size( right.size ), capacity( right.capacity )
+  {
+    right.arr = nullptr;
+    right.size = 0;
+    right.capacity = 0;
+  }
+
+  MyVector operator = ( const MyVector & right )
+  {
+    if ( this != &right )
+    {
+      delete[] arr;
+      T * newArr = new T[right.capacity];
+      std::copy( right.arr, right.arr + right.size, newArr );
+      arr = newArr;
+      size = right.size;
+      capacity = right.capacity;
+    }
+    return this;
+  }
 
   ~MyVector() { delete[] arr; }
 

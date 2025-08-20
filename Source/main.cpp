@@ -1,5 +1,5 @@
-#include <list.h>
-#include <vector.h>
+#include "list.h"
+#include "vector.h"
 #include <iostream>
 
 int main()
@@ -13,6 +13,10 @@ int main()
   for ( size_t i = 0, n = a.Size(); i < n; ++i )
     std::cout << a[i] << std::endl;
 
+  MyVector<int> c( a );
+  for ( size_t i = 0, n = c.Size(); i < n; ++i )
+    std::cout << c[i] << std::endl;
+
   MyList<int> b;
   b.push_back( 1 );
   b.push_back( 2 );
@@ -21,6 +25,11 @@ int main()
   b.erase( 2 );
   for ( size_t i = 0, n = b.size(); i < n; ++i )
     std::cout << b[i] << std::endl;
+
+  MyList<int> d;
+  d = b;
+  for ( size_t i = 0, n = d.size(); i < n; ++i )
+    std::cout << d[i] << std::endl;
 
   return 0;
 }
